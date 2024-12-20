@@ -1,5 +1,6 @@
 #pragma once
 
 
-void updateBoard(std::string move);
+void updateBoard(int startIndex, int newIndex);
 char* currBoard();
+void printBoard();

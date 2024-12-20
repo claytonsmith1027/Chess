@@ -1,4 +1,5 @@
 #include "board.h"
+#include "game.h"
 #include "raylib.h"
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 #include <iostream>
@@ -21,6 +22,7 @@ int MainLoop()
 	loadPieces(WINDOW_WIDTH, WINDOW_HEIGHT);
 	initBoard(WINDOW_WIDTH, WINDOW_HEIGHT);
 	Square hoveredSquare = {};
+	Square heldSquare = {};
 
 	// game loop
 	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
@@ -33,12 +35,23 @@ int MainLoop()
         drawBoard();
 		if(!IsMouseButtonDown(0)){
         	hoveredSquare = currSquare(WINDOW_WIDTH, WINDOW_HEIGHT, GetMouseX(), GetMouseY());
+			if(heldSquare.row != -1 && hoveredSquare.row != -1){
+				if(heldSquare.row != hoveredSquare.row || heldSquare.col != hoveredSquare.col){
+					updateBoard(heldSquare.row * 8 + heldSquare.col, hoveredSquare.row * 8 + hoveredSquare.col);
+					updateSquare(hoveredSquare, heldSquare.piece);
+					updateSquare(heldSquare, '0');
+				}
+			}
+			heldSquare = {};
 		}
 		if(hoveredSquare.piece != '\0'){
 			highlightSquare(currSquare(WINDOW_WIDTH, WINDOW_HEIGHT, GetMouseX(), GetMouseY()), WINDOW_HEIGHT);
 		}
 		if(IsMouseButtonDown(0) && hoveredSquare.piece != '0' && hoveredSquare.piece != '\0'){
-			drawPieces(WINDOW_WIDTH, WINDOW_HEIGHT, hoveredSquare);
+			if(heldSquare.row = -1){
+				heldSquare = hoveredSquare;
+			}
+			drawPieces(WINDOW_WIDTH, WINDOW_HEIGHT, heldSquare);
 		}
 		else{
 			drawPieces(WINDOW_WIDTH, WINDOW_HEIGHT);

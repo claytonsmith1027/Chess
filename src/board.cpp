@@ -191,3 +191,8 @@ void highlightSquare(Square square, int WINDOW_HEIGHT){
         DrawRectangle(square.posX, square.posY, WINDOW_HEIGHT / SQUARE_SIZE_SCALAR, WINDOW_HEIGHT / SQUARE_SIZE_SCALAR, HIGHLIGHT_COLOR);
     }
 }
+
+void updateSquare(Square square, char piece){
+    int index = square.row * 8 + square.col;
+    squares[index].piece = piece;
+}

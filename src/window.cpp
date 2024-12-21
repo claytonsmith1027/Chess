@@ -37,9 +37,19 @@ int MainLoop()
         	hoveredSquare = currSquare(WINDOW_WIDTH, WINDOW_HEIGHT, GetMouseX(), GetMouseY());
 			if(heldSquare.row != -1 && hoveredSquare.row != -1){
 				if(heldSquare.row != hoveredSquare.row || heldSquare.col != hoveredSquare.col){
-					updateBoard(heldSquare.row * 8 + heldSquare.col, hoveredSquare.row * 8 + hoveredSquare.col);
-					updateSquare(hoveredSquare, heldSquare.piece);
-					updateSquare(heldSquare, '0');
+					int startIndex = heldSquare.row * 8 + heldSquare.col;
+					int newIndex = hoveredSquare.row * 8 + hoveredSquare.col;
+					if(isLegalMove(startIndex, newIndex)){
+						updateBoard(startIndex, newIndex);
+						updateSquare(hoveredSquare, heldSquare.piece);
+						updateSquare(heldSquare, '0');
+
+						// TODO: change/redo
+						// if(isPromotion(hoveredSquare.row * 8 + hoveredSquare.col, heldSquare.piece)){
+						// 	promotePawn(hoveredSquare.row * 8 + hoveredSquare.col, 'Q');
+						// 	updateSquare(hoveredSquare, 'q');
+						// }
+					}
 				}
 			}
 			heldSquare = {};

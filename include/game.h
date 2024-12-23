@@ -8,6 +8,8 @@ void changePlayer();
 void printBoard();
 bool isPieceWhite(int index);
 std::vector<int> legalDiagIndexes(int startingIndex);
+std::vector<int> legalCardinalIndexes(int startingIndex);
+std::vector<int> legalKnightIndexes(int startingIndex);
 bool pawnMove(int startIndex, int newIndex);
 bool isPromotion(int index, char piece);
 void promotePawn(int index, char newPiece);

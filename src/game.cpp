@@ -52,19 +52,19 @@ bool isPieceWhite(int index){
 }
 
 std::vector<int> legalDiagIndexes(int startingIndex){
-    std::vector<int> legalIndexes;
-    legalIndexes.resize(13); // 13 is the max number of squares that a piece can see diagonally
+    std::vector<int> legalIndexes(13, -1);
+    // legalIndexes.resize(13); // 13 is the max number of squares that a piece can see diagonally
     int index;
 
     // check up right
     index = startingIndex;
     index -= 7;
-    while(index >= 0 && board[index] == '0'){
+    while(index >= 0 && board[index] == '0' && index % 8 != 0){
         legalIndexes.push_back(index);
         index -= 7;
     }
     if(index >= 0){
-        if(isPieceWhite(index) != isWhitesTurn){
+        if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
             legalIndexes.push_back(index);
         }
     }
@@ -72,12 +72,12 @@ std::vector<int> legalDiagIndexes(int startingIndex){
     // check up left
     index = startingIndex;
     index -= 9;
-    while(index >= 0 && board[index] == '0'){
+    while(index >= 0 && board[index] == '0' && (index + 1) % 8 != 0){
         legalIndexes.push_back(index);
         index -= 9;
     }
     if(index >= 0){
-        if(isPieceWhite(index) != isWhitesTurn){
+        if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
             legalIndexes.push_back(index);
         }
     }
@@ -85,12 +85,12 @@ std::vector<int> legalDiagIndexes(int startingIndex){
     // check down right
     index = startingIndex;
     index += 9;
-    while(index <= 63 && board[index] == '0'){
+    while(index <= 63 && board[index] == '0' && index % 8 != 0){
         legalIndexes.push_back(index);
         index += 9;
     }
     if(index <= 63){
-        if(isPieceWhite(index) != isWhitesTurn){
+        if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
             legalIndexes.push_back(index);
         }
     }
@@ -98,9 +98,43 @@ std::vector<int> legalDiagIndexes(int startingIndex){
     // check down left
     index = startingIndex;
     index += 7;
-    while(index <= 63 && board[index] == '0'){
+    while(index <= 63 && board[index] == '0' && (index + 1) % 8 != 0){
         legalIndexes.push_back(index);
         index += 7;
+    }
+    if(index <= 63){
+        if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
+            legalIndexes.push_back(index);
+        }
+    }
+
+    return legalIndexes;
+}
+
+std::vector<int> legalCardinalIndexes(int startingIndex){
+    std::vector<int> legalIndexes(14, -1);
+    legalIndexes.resize(14); // 14 is the max number of squares that a piece can see cardinally
+    int index;
+
+    // check up
+    index = startingIndex;
+    index -= 8;
+    while(index >= 0 && board[index] == '0'){
+        legalIndexes.push_back(index);
+        index -= 8;
+    }
+    if(index >= 0){
+        if(isPieceWhite(index) != isWhitesTurn){
+            legalIndexes.push_back(index);
+        }
+    }
+
+    // check down
+    index = startingIndex;
+    index += 8;
+    while(index <= 63 && board[index] == '0'){
+        legalIndexes.push_back(index);
+        index += 8;
     }
     if(index <= 63){
         if(isPieceWhite(index) != isWhitesTurn){
@@ -108,6 +142,84 @@ std::vector<int> legalDiagIndexes(int startingIndex){
         }
     }
 
+    // check left
+    index = startingIndex;
+    index -= 1;
+    while(index >= startingIndex - startingIndex % 8 && board[index] == '0'){
+        legalIndexes.push_back(index);
+        index -= 1;
+    }
+    if(index >= startingIndex - startingIndex % 8){
+        if(isPieceWhite(index) != isWhitesTurn){
+            legalIndexes.push_back(index);
+        }
+    }
+
+    // check right
+    index = startingIndex;
+    index += 1;
+    while(index % 8 != 0 && board[index] == '0'){
+        legalIndexes.push_back(index);
+        index += 1;
+    }
+    if(index % 8 != 0){
+        if(isPieceWhite(index) != isWhitesTurn){
+            legalIndexes.push_back(index);
+        }
+    }
+
+    return legalIndexes;
+}
+
+std::vector<int> legalKnightIndexes(int startingIndex){
+    int startRow = startingIndex / 8;
+    int startCol = startingIndex % 8;
+
+    std::vector<int> legalIndexes(8, -1);
+    legalIndexes[0] = startingIndex - 17;
+    legalIndexes[1] = startingIndex - 15;
+    legalIndexes[2] = startingIndex - 10;
+    legalIndexes[3] = startingIndex - 6;
+    legalIndexes[4] = startingIndex + 17;
+    legalIndexes[5] = startingIndex + 15;
+    legalIndexes[6] = startingIndex + 10;
+    legalIndexes[7] = startingIndex + 6;
+
+    for(int i = 0; i < legalIndexes.size(); i++){
+        if(legalIndexes[i] > 63 || legalIndexes[i] < 0){
+            legalIndexes[i] = -1;
+            continue;
+        }
+        if(board[legalIndexes[i]] != '0' && isPieceWhite(legalIndexes[i]) == isWhitesTurn){
+            legalIndexes[i] = -1;
+            continue;
+        }
+        int newRow = legalIndexes[i] / 8;
+        int newCol = legalIndexes[i] % 8;
+        if(startRow == newRow || startRow - newRow > 2 || startRow - newRow < -2 || startCol - newCol > 2 || startCol - newCol < -2){
+            legalIndexes[i] = -1;
+            continue;
+        }
+        int rowDelta;
+        if(startRow - newRow > 0){
+            rowDelta = startRow - newRow;
+        }
+        else{
+            rowDelta = newRow - startRow;
+        }
+        int colDelta;
+        if(startCol - newCol > 0){
+            colDelta = startCol - newCol;
+        }
+        else{
+            colDelta = newCol - startCol;
+        }
+
+        if(rowDelta + colDelta != 3){
+            legalIndexes[i] = -1;
+        }
+    }
+    
     return legalIndexes;
 }
 
@@ -206,7 +318,13 @@ bool knightMove(int startIndex, int newIndex){
         return false;
     }
 
-    return true; //temp
+    std::vector<int> legalIndexes = legalKnightIndexes(startIndex);
+    for(size_t i = 0; i < legalIndexes.size(); i++){
+        if(legalIndexes.at(i) == newIndex){
+            return true;
+        }
+    }
+    return false;
 }
 
 bool kingMove(int startIndex, int newIndex){
@@ -228,7 +346,13 @@ bool rookMove(int startIndex, int newIndex){
         return false;
     }
 
-    return true; //temp
+    std::vector<int> legalIndexes = legalCardinalIndexes(startIndex);
+    for(size_t i = 0; i < legalIndexes.size(); i++){
+        if(legalIndexes.at(i) == newIndex){
+            return true;
+        }
+    }
+    return false;
 }
 
 bool queenMove(int startIndex, int newIndex){
@@ -239,7 +363,16 @@ bool queenMove(int startIndex, int newIndex){
         return false;
     }
 
-    return true; //temp
+    std::vector<int> legalDiagIndexesVect = legalDiagIndexes(startIndex);
+    std::vector<int> legalCardinalIndexesVect = legalCardinalIndexes(startIndex);
+    std::vector<int> legalIndexes = legalDiagIndexesVect;
+    legalIndexes.insert(legalIndexes.end(), legalCardinalIndexesVect.begin(), legalCardinalIndexesVect.end());
+    for(size_t i = 0; i < legalIndexes.size(); i++){
+        if(legalIndexes.at(i) == newIndex || legalIndexes.at(i) == newIndex){
+            return true;
+        }
+    }
+    return false;
 }
 
 bool isLegalMove(int startIndex, int newIndex){

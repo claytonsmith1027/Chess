@@ -35,6 +35,9 @@ int MainLoop()
         drawBoard();
 		if(!IsMouseButtonDown(0)){
         	hoveredSquare = currSquare(WINDOW_WIDTH, WINDOW_HEIGHT, GetMouseX(), GetMouseY());
+			if(hoveredSquare.piece != '0' && hoveredSquare.piece != '\0'){
+				highlightAttackedSquares(hoveredSquare, WINDOW_WIDTH, WINDOW_HEIGHT);
+			}
 			if(heldSquare.row != -1 && hoveredSquare.row != -1){
 				if(heldSquare.row != hoveredSquare.row || heldSquare.col != hoveredSquare.col){
 					int startIndex = heldSquare.row * 8 + heldSquare.col;
@@ -54,13 +57,12 @@ int MainLoop()
 			}
 			heldSquare = {};
 		}
-		if(hoveredSquare.piece != '\0'){
-			highlightSquare(currSquare(WINDOW_WIDTH, WINDOW_HEIGHT, GetMouseX(), GetMouseY()), WINDOW_HEIGHT);
-		}
+		
 		if(IsMouseButtonDown(0) && hoveredSquare.piece != '0' && hoveredSquare.piece != '\0'){
 			if(heldSquare.row = -1){
 				heldSquare = hoveredSquare;
 			}
+			highlightAttackedSquares(heldSquare, WINDOW_WIDTH, WINDOW_HEIGHT);
 			drawPieces(WINDOW_WIDTH, WINDOW_HEIGHT, heldSquare);
 		}
 		else{

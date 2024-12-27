@@ -4,6 +4,7 @@
 
 const int BOARD_SIZE = 8;
 bool isWhitesTurn = true;
+std::string lastMove = "";
 
 // starting board position with lowercase letters representing black pieces and uppercase characters representing white pieces, empty squares represented by 0
 char board[BOARD_SIZE * BOARD_SIZE] = { 'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
@@ -15,21 +16,6 @@ char board[BOARD_SIZE * BOARD_SIZE] = { 'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
                                         'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
                                         'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'};
 
-char* currBoard(){
-    return board;
-}
-
-void updateBoard(int startIndex, int newIndex){
-    if(startIndex != newIndex){
-        board[newIndex] = board[startIndex];
-        board[startIndex] = '0';
-    }
-}
-
-void changePlayer(){
-    isWhitesTurn = !isWhitesTurn;
-}
-
 void printBoard(){
     for(int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++){
         if((i + 1) % 8 == 1){
@@ -38,6 +24,29 @@ void printBoard(){
         std::cout << board[i] << " "; 
     }
     std::cout << std::endl;
+}
+
+char* currBoard(){
+    return board;
+}
+
+void updateBoard(int startingIndex, int newIndex){
+    if(startingIndex != newIndex){
+        if(!isWhitesTurn && board[startingIndex] == 'P' && (startingIndex - newIndex) % 8 != 0 && board[newIndex] == '0'){
+            // this can only happen if a white pawn is taking en passant
+            board[newIndex + 8] = '0';
+        }
+        if(isWhitesTurn && board[startingIndex] == 'p' && (startingIndex - newIndex) % 8 != 0 && board[newIndex] == '0'){
+            // this can only happen if a black pawn is taking en passant
+            board[newIndex - 8] = '0';
+        }
+        board[newIndex] = board[startingIndex];
+        board[startingIndex] = '0';
+    }
+}
+
+void changePlayer(){
+    isWhitesTurn = !isWhitesTurn;
 }
 
 bool isPieceWhite(int index){
@@ -51,19 +60,54 @@ bool isPieceWhite(int index){
     }
 }
 
+void updateLastMove(int startingIndex, int newIndex){
+    char startCol = 'a' + startingIndex % 8;
+    char startRow = '8' - startingIndex / 8;
+    char newCol = 'a' + newIndex % 8;
+    char newRow = '8' - newIndex / 8;
+
+    lastMove = startCol;
+    lastMove += startRow;
+    lastMove += newCol;
+    lastMove += newRow;
+}
+
+int lastMoveStartIndex(){
+    int col = lastMove[0] - 'a';
+    int row = '8' - lastMove[1];
+    return row * 8 + col;
+}
+
+int lastMoveEndIndex(){
+    int col = lastMove[2] - 'a';
+    int row = '8' - lastMove[3];
+    return row * 8 + col;
+}
+
 std::vector<int> legalDiagIndexes(int startingIndex){
     std::vector<int> legalIndexes(13, -1);
     // legalIndexes.resize(13); // 13 is the max number of squares that a piece can see diagonally
     int index;
+    int row;
+    int col;
+
+    if(isPieceWhite(startingIndex) != isWhitesTurn){
+        return legalIndexes; 
+    }
+    
 
     // check up right
     index = startingIndex;
+    row  = startingIndex / 8;
+    col = startingIndex % 8;
     index -= 7;
-    while(index >= 0 && board[index] == '0' && index % 8 != 0){
+    while(row > 0 && col < 7 && board[index] == '0' && index % 8 != 0){
         legalIndexes.push_back(index);
         index -= 7;
+        row--;
+        col++;
     }
-    if(index >= 0){
+    if(row > 0 && col < 7){
         if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
             legalIndexes.push_back(index);
         }
@@ -71,12 +115,16 @@ std::vector<int> legalDiagIndexes(int startingIndex){
 
     // check up left
     index = startingIndex;
+    row  = startingIndex / 8;
+    col = startingIndex % 8;
     index -= 9;
-    while(index >= 0 && board[index] == '0' && (index + 1) % 8 != 0){
+    while(row > 0 && col > 0 && board[index] == '0' && index % 7 != 0){
         legalIndexes.push_back(index);
         index -= 9;
+        row--;
+        col--;
     }
-    if(index >= 0){
+    if(row > 0 && col > 0){
         if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
             legalIndexes.push_back(index);
         }
@@ -84,12 +132,16 @@ std::vector<int> legalDiagIndexes(int startingIndex){
     
     // check down right
     index = startingIndex;
+    row  = startingIndex / 8;
+    col = startingIndex % 8;
     index += 9;
-    while(index <= 63 && board[index] == '0' && index % 8 != 0){
+    while(row < 7 && col < 7 && board[index] == '0' && index % 8 != 0){
         legalIndexes.push_back(index);
         index += 9;
+        row++;
+        col++;
     }
-    if(index <= 63){
+    if(row < 7 && col < 7){
         if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
             legalIndexes.push_back(index);
         }
@@ -97,12 +149,16 @@ std::vector<int> legalDiagIndexes(int startingIndex){
 
     // check down left
     index = startingIndex;
+    row  = startingIndex / 8;
+    col = startingIndex % 8;
     index += 7;
-    while(index <= 63 && board[index] == '0' && (index + 1) % 8 != 0){
+    while(row < 7 && col > 0 && board[index] == '0' && index % 7 != 0){
         legalIndexes.push_back(index);
         index += 7;
+        row++;
+        col--;
     }
-    if(index <= 63){
+    if(row < 7 && col > 0){
         if(board[index] != '0' && isPieceWhite(index) != isWhitesTurn){
             legalIndexes.push_back(index);
         }
@@ -114,6 +170,11 @@ std::vector<int> legalDiagIndexes(int startingIndex){
 std::vector<int> legalCardinalIndexes(int startingIndex){
     std::vector<int> legalIndexes(14, -1);
     legalIndexes.resize(14); // 14 is the max number of squares that a piece can see cardinally
+
+    if(isPieceWhite(startingIndex) != isWhitesTurn){
+        return legalIndexes; 
+    }
+
     int index;
 
     // check up
@@ -172,10 +233,16 @@ std::vector<int> legalCardinalIndexes(int startingIndex){
 }
 
 std::vector<int> legalKnightIndexes(int startingIndex){
+    
     int startRow = startingIndex / 8;
     int startCol = startingIndex % 8;
 
     std::vector<int> legalIndexes(8, -1);
+    
+    if(isPieceWhite(startingIndex) != isWhitesTurn){
+        return legalIndexes; 
+    }
+    
     legalIndexes[0] = startingIndex - 17;
     legalIndexes[1] = startingIndex - 15;
     legalIndexes[2] = startingIndex - 10;
@@ -223,61 +290,135 @@ std::vector<int> legalKnightIndexes(int startingIndex){
     return legalIndexes;
 }
 
-bool pawnMove(int startIndex, int newIndex){
-    bool isWhitePiece = isPieceWhite(startIndex);
+std::vector<int> legalPawnIndexes(int startingIndex){
+    bool isWhitePiece = isPieceWhite(startingIndex);
     bool hasMoved;
-
-    // handle playing wrong color piece
-    if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
-        return false;
+    int col = startingIndex % 8; 
+    std::vector<int> legalIndexes(4, -1);
+    
+    if(isPieceWhite(startingIndex) != isWhitesTurn){
+        return legalIndexes; 
     }
 
-    // handle single move case
-    if((startIndex - newIndex == 8 && isWhitePiece) || (newIndex - startIndex == 8 && !isWhitePiece))
-    {
-        if((board[startIndex - 8] == '0' && isWhitePiece) || (board[startIndex + 8] == '0' && !isWhitePiece)){
-            return true;
-        }
-        return false;
-    }
-
-    // handle double move case
-    if((startIndex < 16 && !isWhitePiece) || (startIndex > 47 && isWhitePiece)){
+    if((startingIndex < 16 && !isWhitePiece) || (startingIndex > 47 && isWhitePiece)){
         hasMoved = false;
     }
     else{
         hasMoved = true;
     }
-    if((startIndex - newIndex == 16 && isWhitePiece) || (newIndex - startIndex == 16 && !isWhitePiece)){
-        if(!hasMoved){
-            if(isWhitePiece && board[startIndex - 8] == '0' && board[startIndex - 16] == '0'){
-                return true;
-            }
-            else if(!isWhitePiece && board[startIndex + 8] == '0' && board[startIndex + 16] == '0'){
-                return true;
+    
+    if(isWhitePiece){
+        //handle fowards movement including double move
+        if(board[startingIndex - 8] == '0'){
+            legalIndexes.push_back(startingIndex - 8);
+            if(!hasMoved && board[startingIndex - 16] == '0'){
+                legalIndexes.push_back(startingIndex - 16);
             }
         }
-        return false;
+        //handle captures excluding en passant
+        if(col != 0 && board[startingIndex - 9] != '0' && !isPieceWhite(startingIndex - 9)){
+            legalIndexes.push_back(startingIndex - 9);
+        }
+        if(col != 7 && board[startingIndex - 7] != '0' && !isPieceWhite(startingIndex - 7)){
+            legalIndexes.push_back(startingIndex - 7);
+        }
+        //handle en passant captures
+        int prevStartIndex = lastMoveStartIndex();
+        int prevEndIndex = lastMoveEndIndex();
+        if(col != 0 && board[startingIndex - 1] == 'p'){
+            // a pawn directly next to another pawn can be taken en passant only on the very next turn and only if that pawn moved two squares on the previous turn
+            if(startingIndex - 1 == prevEndIndex && prevEndIndex - prevStartIndex == 16){
+                legalIndexes.push_back(startingIndex - 9);
+            }
+        }
+        else if(col != 7 && board[startingIndex + 1] == 'p'){
+            if(startingIndex + 1 == prevEndIndex && prevEndIndex - prevStartIndex == 16){
+                legalIndexes.push_back(startingIndex - 7);
+            }
+        }
     }
 
-    //handle captures excluding en passant
-    if((isWhitePiece && ((startIndex - newIndex == 7 && startIndex % 8 != 0) || (startIndex - newIndex == 9 && (startIndex + 1) % 8 != 0)))){
-        if(board[newIndex] == '0' || isPieceWhite(newIndex) == isWhitePiece){
-            return false;
+    else{
+        //handle fowards movement including double move
+        if(board[startingIndex + 8] == '0'){
+            legalIndexes.push_back(startingIndex + 8);
+            if(!hasMoved && board[startingIndex + 16] == '0'){
+                legalIndexes.push_back(startingIndex + 16);
+            }
         }
-        else{
-            return true;
+        //handle captures excluding en passant
+        if(col != 0 && board[startingIndex + 9] != '0' && isPieceWhite(startingIndex + 9)){
+            legalIndexes.push_back(startingIndex + 9);
+        }
+        if(col != 7 && board[startingIndex + 7] != '0' && isPieceWhite(startingIndex + 7)){
+            legalIndexes.push_back(startingIndex + 7);
+        }
+        //handle en passant captures
+        int prevStartIndex = lastMoveStartIndex();
+        int prevEndIndex = lastMoveEndIndex();
+        if(col != 0 && board[startingIndex + 1] == 'P'){
+            // a pawn directly next to another pawn can be taken en passant only on the very next turn and only if that pawn moved two squares on the previous turn
+            if(startingIndex + 1 == prevEndIndex && prevStartIndex - prevEndIndex == 16){
+                legalIndexes.push_back(startingIndex + 9);
+            }
+        }
+        else if(col != 7 && board[startingIndex - 1] == 'P'){
+            if(startingIndex - 1 == prevEndIndex && prevStartIndex - prevEndIndex == 16){
+                legalIndexes.push_back(startingIndex + 7);
+            }
         }
     }
-    if((!isWhitePiece && ((newIndex - startIndex == 7 && (startIndex + 1) % 8 != 0 ) || (newIndex - startIndex == 9 && startIndex % 8 != 0)))){
-        if(board[newIndex] == '0' || isPieceWhite(newIndex) == isWhitePiece){
-            return false;
-        }
-        else{
-            return true;
+    return legalIndexes;
+}
+
+std::vector<int> legalKingIndexes(int startingIndex){
+    int startRow = startingIndex / 8;
+    int startCol = startingIndex % 8;
+
+    std::vector<int> legalIndexes(8, -1);
+    
+    if(isPieceWhite(startingIndex) != isWhitesTurn){
+        return legalIndexes; 
+    }
+    
+    legalIndexes[0] = startingIndex - 9;
+    legalIndexes[1] = startingIndex - 8;
+    legalIndexes[2] = startingIndex - 7;
+    legalIndexes[3] = startingIndex - 1;
+    legalIndexes[4] = startingIndex + 1;
+    legalIndexes[5] = startingIndex + 7;
+    legalIndexes[6] = startingIndex + 8;
+    legalIndexes[7] = startingIndex + 9;
+
+    // castling not implemented
+    for(int i = 0; i < legalIndexes.size(); i++){
+        if(board[legalIndexes[i]] != '0' && isPieceWhite(legalIndexes[i]) == isWhitesTurn){
+            legalIndexes[i] = -1;
         }
     }
-    return false; //temp
+
+    if(startCol == 0){
+        legalIndexes[0] = -1;
+        legalIndexes[3] = -1;
+        legalIndexes[5] = -1;
+    }
+    else if(startCol == 7){
+        legalIndexes[2] = -1;
+        legalIndexes[4] = -1;
+        legalIndexes[7] = -1;
+    }
+    if(startRow == 0){
+        legalIndexes[0] = -1;
+        legalIndexes[1] = -1;
+        legalIndexes[2] = -1;
+    }
+    else if(startRow == 7){
+        legalIndexes[5] = -1;
+        legalIndexes[6] = -1;
+        legalIndexes[7] = -1;
+    }
+
+    return legalIndexes;
 }
 
 bool isPromotion(int index, char piece){
@@ -293,118 +434,60 @@ void promotePawn(int index, char newPiece){
     board[index] = newPiece;
 }
 
-bool bishopMove(int startIndex, int newIndex){
-    bool isWhitePiece = isPieceWhite(startIndex);
 
-    // handle playing wrong color piece
-    if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
-        return false;
-    }
+std::vector<int> getLegalIndexes(int startingIndex){
+    std::vector<int> indexes;
+    std::vector<int> pawnIndexes = legalPawnIndexes(startingIndex);
+    std::vector<int> knightIndexes = legalKnightIndexes(startingIndex);
+    std::vector<int> rookIndexes = legalCardinalIndexes(startingIndex);
+    std::vector<int> bishopIndexes = legalDiagIndexes(startingIndex);
+    std::vector<int> kingIndexes = legalKingIndexes(startingIndex);
 
-    std::vector<int> legalIndexes = legalDiagIndexes(startIndex);
-    for(size_t i = 0; i < legalIndexes.size(); i++){
-        if(legalIndexes.at(i) == newIndex){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool knightMove(int startIndex, int newIndex){
-    bool isWhitePiece = isPieceWhite(startIndex);
-
-    // handle playing wrong color piece
-    if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
-        return false;
-    }
-
-    std::vector<int> legalIndexes = legalKnightIndexes(startIndex);
-    for(size_t i = 0; i < legalIndexes.size(); i++){
-        if(legalIndexes.at(i) == newIndex){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool kingMove(int startIndex, int newIndex){
-    bool isWhitePiece = isPieceWhite(startIndex);
-
-    // handle playing wrong color piece
-    if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
-        return false;
-    }
-
-    return true; //temp
-}
-
-bool rookMove(int startIndex, int newIndex){
-    bool isWhitePiece = isPieceWhite(startIndex);
-
-    // handle playing wrong color piece
-    if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
-        return false;
-    }
-
-    std::vector<int> legalIndexes = legalCardinalIndexes(startIndex);
-    for(size_t i = 0; i < legalIndexes.size(); i++){
-        if(legalIndexes.at(i) == newIndex){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool queenMove(int startIndex, int newIndex){
-    bool isWhitePiece = isPieceWhite(startIndex);
-    
-    // handle playing wrong color piece
-    if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
-        return false;
-    }
-
-    std::vector<int> legalDiagIndexesVect = legalDiagIndexes(startIndex);
-    std::vector<int> legalCardinalIndexesVect = legalCardinalIndexes(startIndex);
-    std::vector<int> legalIndexes = legalDiagIndexesVect;
-    legalIndexes.insert(legalIndexes.end(), legalCardinalIndexesVect.begin(), legalCardinalIndexesVect.end());
-    for(size_t i = 0; i < legalIndexes.size(); i++){
-        if(legalIndexes.at(i) == newIndex || legalIndexes.at(i) == newIndex){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool isLegalMove(int startIndex, int newIndex){
-    bool isLegal = false;
-    switch(board[startIndex]){
+    switch(board[startingIndex]){
         case 'P':
         case 'p':
-            isLegal = pawnMove(startIndex, newIndex);
+            indexes.insert(indexes.end(), pawnIndexes.begin(), pawnIndexes.end());
             break;
         case 'B':
         case 'b':
-            isLegal = bishopMove(startIndex, newIndex);
+            indexes.insert(indexes.end(), bishopIndexes.begin(), bishopIndexes.end());
             break;
         case 'N':
         case 'n':
-            isLegal = knightMove(startIndex, newIndex);
+            indexes.insert(indexes.end(), knightIndexes.begin(), knightIndexes.end());
             break;
         case 'K':
         case 'k':
-            isLegal = kingMove(startIndex, newIndex);
+            indexes.insert(indexes.end(), kingIndexes.begin(), kingIndexes.end());
             break;
         case 'R':
         case 'r':
-            isLegal = rookMove(startIndex, newIndex);
+            indexes.insert(indexes.end(), rookIndexes.begin(), rookIndexes.end());
             break;
         case 'Q':
         case 'q':
-            isLegal = queenMove(startIndex, newIndex);
+            indexes.insert(indexes.end(), bishopIndexes.begin(), bishopIndexes.end());
+            indexes.insert(indexes.end(), rookIndexes.begin(), rookIndexes.end());
             break;
     }
-    if(isLegal){
-        changePlayer();
+    return indexes;
+} 
+
+bool isLegalMove(int startingIndex, int newIndex){
+    bool isWhitePiece = isPieceWhite(startingIndex);
+
+    // handle playing wrong color piece
+    if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
+        return false;
     }
-    return isLegal;
+
+    std::vector<int> allLegalIndexes = getLegalIndexes(startingIndex); 
+    for(int i = 0; i < allLegalIndexes.size(); i++){
+        if(allLegalIndexes.at(i) == newIndex){
+            updateLastMove(startingIndex, newIndex);
+            changePlayer();
+            return true;
+        }
+    }
+    return false;
 }

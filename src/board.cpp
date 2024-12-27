@@ -181,11 +181,20 @@ Square currSquare(int WINDOW_WIDTH, int WINDOW_HEIGHT, int xPos, int yPos){
     return squares[(row - 1) * 8 + (col - 1)];
 }
 
-
 void highlightSquare(Square square, int WINDOW_HEIGHT){
-    Color HIGHLIGHT_COLOR = {0xff, 0x00, 0x00, 0x55};
+    Color HIGHLIGHT_COLOR = {0xff, 0x00, 0x00, 0xff};
     if(square.row != -1){
         DrawRectangle(square.posX, square.posY, WINDOW_HEIGHT / SQUARE_SIZE_SCALAR, WINDOW_HEIGHT / SQUARE_SIZE_SCALAR, HIGHLIGHT_COLOR);
+    }
+}
+
+void highlightAttackedSquares(Square square, int WINDOW_WIDTH, int WINDOW_HEIGHT){
+    std::vector<int> indexes = getLegalIndexes(square.row * 8 + square.col);
+    for(int i = 0; i < indexes.size(); i++){
+        if(indexes[i] == -1){
+            continue;
+        }
+            highlightSquare(squares[indexes[i]], WINDOW_HEIGHT);
     }
 }
 

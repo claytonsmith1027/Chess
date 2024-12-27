@@ -5,6 +5,7 @@
 const int BOARD_SIZE = 8;
 bool isWhitesTurn = true;
 std::string lastMove = "";
+std::string tempLastMove = "";
 
 // starting board position with lowercase letters representing black pieces and uppercase characters representing white pieces, empty squares represented by 0
 char board[BOARD_SIZE * BOARD_SIZE] = { 'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
@@ -15,6 +16,7 @@ char board[BOARD_SIZE * BOARD_SIZE] = { 'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
                                         '0', '0', '0', '0', '0', '0', '0', '0',
                                         'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
                                         'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'};
+char tempBoard[BOARD_SIZE * BOARD_SIZE];
 
 void printBoard(){
     for(int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++){
@@ -45,6 +47,24 @@ void updateBoard(int startingIndex, int newIndex){
     }
 }
 
+void updateTempBoard(int startingIndex, int newIndex){
+    for(int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++){
+        tempBoard[i] = board[i];
+    }
+    if(startingIndex != newIndex){
+        if(!isWhitesTurn && tempBoard[startingIndex] == 'P' && (startingIndex - newIndex) % 8 != 0 && tempBoard[newIndex] == '0'){
+            // this can only happen if a white pawn is taking en passant
+            tempBoard[newIndex + 8] = '0';
+        }
+        if(isWhitesTurn && tempBoard[startingIndex] == 'p' && (startingIndex - newIndex) % 8 != 0 && tempBoard[newIndex] == '0'){
+            // this can only happen if a black pawn is taking en passant
+            tempBoard[newIndex - 8] = '0';
+        }
+        tempBoard[newIndex] = tempBoard[startingIndex];
+        tempBoard[startingIndex] = '0';
+    }
+}
+
 void changePlayer(){
     isWhitesTurn = !isWhitesTurn;
 }
@@ -61,6 +81,8 @@ bool isPieceWhite(int index){
 }
 
 void updateLastMove(int startingIndex, int newIndex){
+    tempLastMove = lastMove;
+
     char startCol = 'a' + startingIndex % 8;
     char startRow = '8' - startingIndex / 8;
     char newCol = 'a' + newIndex % 8;
@@ -71,6 +93,9 @@ void updateLastMove(int startingIndex, int newIndex){
     lastMove += newCol;
     lastMove += newRow;
 }
+
+
+
 
 int lastMoveStartIndex(){
     int col = lastMove[0] - 'a';
@@ -347,11 +372,11 @@ std::vector<int> legalPawnIndexes(int startingIndex){
             }
         }
         //handle captures excluding en passant
-        if(col != 0 && board[startingIndex + 9] != '0' && isPieceWhite(startingIndex + 9)){
-            legalIndexes.push_back(startingIndex + 9);
-        }
-        if(col != 7 && board[startingIndex + 7] != '0' && isPieceWhite(startingIndex + 7)){
+        if(col != 0 && board[startingIndex + 7] != '0' && isPieceWhite(startingIndex + 7)){
             legalIndexes.push_back(startingIndex + 7);
+        }
+        if(col != 7 && board[startingIndex + 9] != '0' && isPieceWhite(startingIndex + 9)){
+            legalIndexes.push_back(startingIndex + 9);
         }
         //handle en passant captures
         int prevStartIndex = lastMoveStartIndex();
@@ -434,7 +459,6 @@ void promotePawn(int index, char newPiece){
     board[index] = newPiece;
 }
 
-
 std::vector<int> getLegalIndexes(int startingIndex){
     std::vector<int> indexes;
     std::vector<int> pawnIndexes = legalPawnIndexes(startingIndex);
@@ -473,21 +497,139 @@ std::vector<int> getLegalIndexes(int startingIndex){
     return indexes;
 } 
 
+std::vector<int> potentialAttackerIndexes(int startingIndex){
+    int startRow = startingIndex / 8;
+    int startCol = startingIndex % 8;
+
+    std::vector<int> knightIndexes = legalKnightIndexes(startingIndex);
+    for(int i = 0; i < knightIndexes.size(); i++){
+        if(board[knightIndexes[i]] == '0'){
+            knightIndexes[i] = -1;
+        }
+    }
+
+    std::vector<int> diagIndexes = legalDiagIndexes(startingIndex);
+    int dir = 1; // 1 = up right, 2 = up left, 3 = down right, 4 = down left
+    for(int i = 0; i < diagIndexes.size(); i++){
+        if(diagIndexes[i] != -1 && board[diagIndexes[i]] == '0'){
+            diagIndexes[i] = -1;
+        }
+        else{
+            if(dir == 1){
+                for(int j = i + 1; j < diagIndexes.size(); j++){
+                    int newRow = diagIndexes[j] / 8;
+                    int newCol = diagIndexes[j] % 8;
+                    if(newRow + j != startRow || newCol - j != startCol){
+                        i = j - 1;
+                        break;
+                    }
+                    else{
+                        diagIndexes[i] = -1;
+                    }
+                }
+                dir++;
+            }
+            else if(dir == 2){
+                for(int j = i + 1; j < diagIndexes.size(); j++){
+                    int newRow = diagIndexes[j] / 8;
+                    int newCol = diagIndexes[j] % 8;
+                    if(newRow + j != startRow || newCol + j != startCol){
+                        i = j - 1;
+                        break;
+                    }
+                    else{
+                        diagIndexes[i] = -1;
+                    }
+                }
+                dir++;
+            }
+            else if(dir == 3){
+                for(int j = i + 1; j < diagIndexes.size(); j++){
+                    int newRow = diagIndexes[j] / 8;
+                    int newCol = diagIndexes[j] % 8;
+                    if(newRow - j != startRow || newCol - j != startCol){
+                        i = j - 1;
+                        break;
+                    }
+                    else{
+                        diagIndexes[i] = -1;
+                    }
+                }
+                dir++;
+            }
+            else if(dir == 4){
+                for(int j = i + 1; j < diagIndexes.size(); j++){
+                    int newRow = diagIndexes[j] / 8;
+                    int newCol = diagIndexes[j] % 8;
+                    if(newRow - j != startRow || newCol + j != startCol){
+                        i = j - 1;
+                        break;
+                    }
+                    else{
+                        diagIndexes[i] = -1;
+                    }
+                }
+                dir++;
+            }
+        }  
+    }
+    std::vector<int> indexes = knightIndexes;
+    indexes.insert(indexes.end(), diagIndexes.begin(), diagIndexes.end());
+
+    return indexes;
+}
+
+bool isInCheck(int startingIndex){
+    std::vector<int> potentialAttackers = potentialAttackerIndexes(startingIndex);
+    for(int i = 0; i < potentialAttackers.size(); i++){
+        if(potentialAttackers[i] != -1){
+            changePlayer();
+            std::vector<int> attackedIndexes = getLegalIndexes(potentialAttackers[i]);
+            changePlayer();
+            for(int j = 0; j < attackedIndexes.size(); j++){
+                if(attackedIndexes[j] == startingIndex){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 bool isLegalMove(int startingIndex, int newIndex){
     bool isWhitePiece = isPieceWhite(startingIndex);
+    char kingPiece = 'K';
+    int kingIndex = -1;
+
 
     // handle playing wrong color piece
     if((isWhitePiece && !isWhitesTurn) || (!isWhitePiece && isWhitesTurn)){
         return false;
     }
-
+    if(!isWhitesTurn){
+        kingPiece = 'k';
+    }
     std::vector<int> allLegalIndexes = getLegalIndexes(startingIndex); 
     for(int i = 0; i < allLegalIndexes.size(); i++){
         if(allLegalIndexes.at(i) == newIndex){
-            updateLastMove(startingIndex, newIndex);
-            changePlayer();
+            updateTempBoard(startingIndex, newIndex);
+            for(int j = 0; j < BOARD_SIZE * BOARD_SIZE; j++){
+                if(tempBoard[j] == kingPiece){
+                    kingIndex = j;
+                    break;
+                }
+            }
+            if(isInCheck(kingIndex)){
+                return false;
+            }
             return true;
         }
     }
     return false;
+}
+
+void playMove(int startingIndex, int newIndex){
+    updateBoard(startingIndex, newIndex);
+    updateLastMove(startingIndex, newIndex);
+    changePlayer();
 }

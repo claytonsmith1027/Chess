@@ -194,7 +194,10 @@ void highlightAttackedSquares(Square square, int WINDOW_WIDTH, int WINDOW_HEIGHT
         if(indexes[i] == -1){
             continue;
         }
+        if(isLegalMove(square.row * 8 + square.col, indexes[i])){
             highlightSquare(squares[indexes[i]], WINDOW_HEIGHT);
+        }
+            
     }
 }
 

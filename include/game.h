@@ -3,6 +3,7 @@
 #include "vector"
 
 void updateBoard(int startIndex, int newIndex);
+void updateTempBoard(int startIndex, int newIndex);
 char* currBoard();
 void changePlayer();
 void printBoard();
@@ -17,4 +18,7 @@ void promotePawn(int index, char newPiece);
 int lastMoveStartIndex();
 int lastMoveEndIndex();
 std::vector<int> getLegalIndexes(int startingIndex);
+std::vector<int> potentialAttackerIndexes(int startingIndex);
+bool isInCheck(int startingIndex);
 bool isLegalMove(int startIndex, int newIndex);
+void playMove(int startingIndex, int newIndex);

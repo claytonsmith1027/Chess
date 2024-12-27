@@ -43,7 +43,7 @@ int MainLoop()
 					int startIndex = heldSquare.row * 8 + heldSquare.col;
 					int newIndex = hoveredSquare.row * 8 + hoveredSquare.col;
 					if(isLegalMove(startIndex, newIndex)){
-						updateBoard(startIndex, newIndex);
+						playMove(startIndex, newIndex);
 						updateSquare(hoveredSquare, heldSquare.piece);
 						updateSquare(heldSquare, '0');
 

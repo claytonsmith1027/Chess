@@ -1,11 +1,10 @@
 #include "board.h"
 #include "game.h"
 #include "raylib.h"
+#include "window.h"
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 #include <iostream>
 
-const int WINDOW_WIDTH = 1280;
-const int WINDOW_HEIGHT = 720;
 
 int MainLoop()
 {
@@ -42,16 +41,20 @@ int MainLoop()
 				if(heldSquare.row != hoveredSquare.row || heldSquare.col != hoveredSquare.col){
 					int startIndex = heldSquare.row * 8 + heldSquare.col;
 					int newIndex = hoveredSquare.row * 8 + hoveredSquare.col;
-					if(isLegalMove(startIndex, newIndex)){
-						playMove(startIndex, newIndex);
+					if(isValidMove(heldSquare.row, heldSquare.col, hoveredSquare.row, hoveredSquare.col)){
+						playMove(heldSquare.row, heldSquare.col, hoveredSquare.row, hoveredSquare.col);
+						if(isPromotion(hoveredSquare.row, hoveredSquare.col)){
+							if(heldSquare.piece == 'P'){
+								promotePiece(hoveredSquare.row, hoveredSquare.col, 'Q');
+								updateSquare(heldSquare, 'Q');
+							}
+							else{
+								promotePiece(hoveredSquare.row, hoveredSquare.col, 'q');
+								updateSquare(heldSquare, 'q');
+							}
+						}
 						updateSquare(hoveredSquare, heldSquare.piece);
 						updateSquare(heldSquare, '0');
-
-						// TODO: change/redo
-						// if(isPromotion(hoveredSquare.row * 8 + hoveredSquare.col, heldSquare.piece)){
-						// 	promotePawn(hoveredSquare.row * 8 + hoveredSquare.col, 'Q');
-						// 	updateSquare(hoveredSquare, 'q');
-						// }
 					}
 				}
 			}

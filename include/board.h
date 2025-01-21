@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 struct Square{
     float posX;
     float posY;
@@ -11,6 +9,7 @@ struct Square{
     bool isLight;
     char piece = '\0';
 };
+
 void initBoard(const int WINDOW_WIDTH, const int WINDOW_HEIGHT);
 void drawBoard();
 void drawPieces(const int WINDOW_WIDTH, const int WINDOW_HEIGHT, Square selectedSquare = {});

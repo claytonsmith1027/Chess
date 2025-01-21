@@ -1,24 +1,29 @@
 #pragma once
 
-#include "vector"
+#include <iostream>
+#include <vector>
 
-void updateBoard(int startIndex, int newIndex);
-void updateTempBoard(int startIndex, int newIndex);
+const int BOARD_SIZE = 8;
+
+bool isInBounds(int x, int y);
 char* currBoard();
-void changePlayer();
+bool isWhitePiece(int startRow, int startCol);
+bool isPathClear(int startRow, int startCol, int endRow, int endCol);
+int abs(int input);
+void updateLastMove(int startRow, int startCol, int endRow, int endCol);
+bool canEnPassant(int startRow, int startCol, int endRow, int endCol);
+bool isPromotion(int endRow, int endCol);
+bool isValidPawnMove(int startRow, int startCol, int endRow, int endCol);
+bool isValidRookMove(int startRow, int startCol, int endRow, int endCol);
+bool isValidKnightMove(int startRow, int startCol, int endRow, int endCol);
+bool isValidBishopMove(int startRow, int startCol, int endRow, int endCol);
+bool isValidQueenMove(int startRow, int startCol, int endRow, int endCol);
+bool isValidKingMove(int startRow, int startCol, int endRow, int endCol);
+bool isValidMove(int startRow, int startCol, int endRow, int endCol);
+std::vector<int> getValidIndexes(int startRow, int startCol);
+void switchPlayer();
+void movePiece(int startRow, int startCol, int endRow, int endCol);
+void promotePiece(int endRow, int endCol, char piece);
+void playMove(int startRow, int startCol, int endRow, int endCol);
 void printBoard();
-bool isPieceWhite(int index);
-std::vector<int> legalDiagIndexes(int startingIndex);
-std::vector<int> legalCardinalIndexes(int startingIndex);
-std::vector<int> legalKnightIndexes(int startingIndex);
-std::vector<int> legalPawnIndexes(int startIndex);
-std::vector<int> legalKingIndexes(int startingIndex);
-bool isPromotion(int index, char piece);
-void promotePawn(int index, char newPiece);
-int lastMoveStartIndex();
-int lastMoveEndIndex();
-std::vector<int> getLegalIndexes(int startingIndex);
-std::vector<int> potentialAttackerIndexes(int startingIndex);
-bool isInCheck(int startingIndex);
-bool isLegalMove(int startIndex, int newIndex);
-void playMove(int startingIndex, int newIndex);
+

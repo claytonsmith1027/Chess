@@ -10,7 +10,6 @@
 const std::string RESOURCE_PATH = "../resources";
 const std::string PIECES_PATH = RESOURCE_PATH + "/pieces";
 const float SQUARE_SIZE_SCALAR = 9.0;
-const int BOARD_SIZE = 8;
 std::vector<Texture> pieceTextures = {};
 Square squares[63] = {};
 
@@ -189,15 +188,12 @@ void highlightSquare(Square square, int WINDOW_HEIGHT){
 }
 
 void highlightAttackedSquares(Square square, int WINDOW_WIDTH, int WINDOW_HEIGHT){
-    std::vector<int> indexes = getLegalIndexes(square.row * 8 + square.col);
+    std::vector<int> indexes = getValidIndexes(square.row, square.col);
     for(int i = 0; i < indexes.size(); i++){
         if(indexes[i] == -1){
             continue;
         }
-        if(isLegalMove(square.row * 8 + square.col, indexes[i])){
-            highlightSquare(squares[indexes[i]], WINDOW_HEIGHT);
-        }
-            
+        highlightSquare(squares[indexes[i]], WINDOW_HEIGHT);
     }
 }
 

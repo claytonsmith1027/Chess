@@ -14,15 +14,19 @@ char board[BOARD_SIZE][BOARD_SIZE] = {
 };
 
 bool isWhitesTurn = true;
-int lastMove[4] = {-1, -1, -1, -1}; // {startRow, startCol, endRow, endCol} 
+int lastMove[4] = {-1, -1, -1, -1}; // {startRow, startCol, endRow, endCol}
+int whiteKingRow = 7;
+int whiteKingCol = 4;
+int blackKingRow = 0;
+int blackKingCol = 4;
 
 //debug functions
 void printBoard() {
     for (int i = 0; i < BOARD_SIZE; ++i) {
         for (int j = 0; j < BOARD_SIZE; ++j) {
-            std::cout << board[j][i] << ' ';
+            std::cout << board[i][j] << ' ';
         }
-        std::cout << std::endl;
+        std::cout << '\n';
     }
     std::cout << std::endl;
 }
@@ -93,6 +97,28 @@ bool isPromotion(int endRow, int endCol){
     return false;
 }
 
+bool isAttacked(int row, int column){
+    for(int i = 0; i < BOARD_SIZE; i++){
+        for(int j = 0; j < BOARD_SIZE; j++){
+            if(board[i][j] != '0' && isWhitePiece(i, j) != isWhitesTurn){
+                switchPlayer();
+                if(board[i][j] == 'p' || board[i][j] == 'P'){
+                    if(j != column && isValidPieceMovement(i, j, row, column)){
+                        switchPlayer();
+                        return true;
+                    }
+                }
+                else if(isValidPieceMovement(i, j, row, column)){
+                    switchPlayer();
+                    return true;
+                }
+                switchPlayer();
+            }
+        }
+    }
+    return false;
+}
+
 // piece rules functions
 bool isValidPawnMove(int startRow, int startCol, int endRow, int endCol) {
     char pawn = board[startRow][startCol];
@@ -102,31 +128,24 @@ bool isValidPawnMove(int startRow, int startCol, int endRow, int endCol) {
         direction = 1;
         pawnStartRow = 1;
     }
-
     char target = board[endRow][endCol];
-
     if (endCol == startCol && endRow == startRow + direction && target == '0') {
         return true;
     }
-
     if (endCol == startCol && endRow == startRow + 2 * direction && startRow == pawnStartRow &&
         target == '0' && board[startRow + direction][startCol] == '0') {
         return true;
     }
-
     if (abs(endCol - startCol) == 1 && endRow == startRow + direction) {
         if (isWhitePiece(startRow, startCol) != isWhitePiece(endRow, endCol) && target != '0'){ 
             return true;
         }
-
         if (target == '0' && canEnPassant(startRow, startCol, endRow, endCol)) {
             return true;
         }
     }
-
     return false;
 }
-
 
 bool isValidRookMove(int startRow, int startCol, int endRow, int endCol) {
     return (startRow == endRow || startCol == endCol) && isPathClear(startRow, startCol, endRow, endCol);
@@ -150,7 +169,7 @@ bool isValidKingMove(int startRow, int startCol, int endRow, int endCol) {
     return abs(endRow - startRow) <= 1 && abs(endCol - startCol) <= 1;
 }
 
-bool isValidMove(int startRow, int startCol, int endRow, int endCol) {
+bool isValidPieceMovement(int startRow, int startCol, int endRow, int endCol) {
     if((isWhitePiece(startRow, startCol) && !isWhitesTurn) || (!isWhitePiece(startRow, startCol) && isWhitesTurn)){
         return false;
     }
@@ -187,17 +206,70 @@ bool isValidMove(int startRow, int startCol, int endRow, int endCol) {
     }
 }
 
+bool isValidMove(int startRow, int startCol, int endRow, int endCol){
+    char kingPiece = 'k';
+    int kingRow = blackKingRow;
+    int kingCol = blackKingCol;
+    bool isKingAttacked = false;
+    bool isEnPassant = false;
+
+    if(isWhitesTurn){
+        kingPiece = 'K';
+        kingRow = whiteKingRow;
+        kingCol = whiteKingCol;
+    }
+    
+    if(!isValidPieceMovement(startRow, startCol, endRow, endCol)){
+        return false;
+    }
+    else{
+        char tempPiece = board[startRow][startCol];
+        char tempAttackedPiece = board[endRow][endCol];
+        char enPassantPiece;
+        board[startRow][startCol] = '0';
+        board[endRow][endCol] = tempPiece;
+        if(tempPiece == 'k' || tempPiece == 'K'){
+            kingRow = endRow;
+            kingCol = endCol;
+        }
+        if(tempPiece == 'p' || tempPiece == 'P'){
+            if(canEnPassant(startRow, startCol, endRow, endCol)){
+                isEnPassant = true;
+                enPassantPiece = board[lastMove[2]][lastMove[3]];
+                board[lastMove[2]][lastMove[3]] = '0';
+            }
+        }
+        if(isAttacked(kingRow, kingCol)){
+            isKingAttacked = true;  
+        }
+        board[startRow][startCol] = tempPiece;
+        board[endRow][endCol] = tempAttackedPiece;
+        if(isEnPassant){
+            board[lastMove[2]][lastMove[3]] = enPassantPiece;
+        }
+        return !isKingAttacked;
+    }
+}
+
 // game state update functions
 void switchPlayer(){
     isWhitesTurn = !isWhitesTurn;
 }
 
 void movePiece(int startRow, int startCol, int endRow, int endCol){
-    board[endRow][endCol] = board[startRow][startCol];
-    board[startRow][startCol] = '0';
-    if(canEnPassant(startRow, startCol, endRow, endCol)){
+    if((board[startRow][startCol] == 'p' || board[startRow][startCol] == 'P') && canEnPassant(startRow, startCol, endRow, endCol)){
         board[lastMove[2]][lastMove[3]] = '0';
     }
+    else if(board[startRow][startCol] == 'k'){
+        blackKingRow = endRow;
+        blackKingCol = endCol;
+    }
+    else if(board[startRow][startCol] == 'K'){
+        whiteKingRow = endRow;
+        whiteKingCol = endCol;
+    }
+    board[endRow][endCol] = board[startRow][startCol];
+    board[startRow][startCol] = '0';
 }
 
 void promotePiece(int endRow, int endCol, char piece){

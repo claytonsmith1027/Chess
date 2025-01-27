@@ -16,6 +16,8 @@ void updateLastMove(int startRow, int startCol, int endRow, int endCol);
 bool canEnPassant(int startRow, int startCol, int endRow, int endCol);
 bool isPromotion(int endRow, int endCol);
 bool isAttacked(int row, int column);
+bool canCastle(int startRow, int startCol, int endRow, int endCol);
+void castleKing(int startRow, int startCol, int endRow, int endCol);
 
 bool isValidPawnMove(int startRow, int startCol, int endRow, int endCol);
 bool isValidRookMove(int startRow, int startCol, int endRow, int endCol);

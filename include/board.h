@@ -19,3 +19,4 @@ Square currSquare(int WINDOW_WIDTH, int WINDOW_HEIGHT, int xPos, int yPos);
 void highlightSquare(Square square, int WINDOW_HEIGHT);
 void highlightAttackedSquares(Square square, int WINDOW_WIDTH, int WINDOW_HEIGHT);
 void updateSquare(Square square, char piece);
+Square getSquare(int index);

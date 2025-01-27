@@ -201,3 +201,7 @@ void updateSquare(Square square, char piece){
     int index = square.row * 8 + square.col;
     squares[index].piece = piece;
 }
+
+Square getSquare(int index){
+    return squares[index];
+}

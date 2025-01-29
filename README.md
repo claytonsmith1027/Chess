@@ -2,4 +2,4 @@ Chess recreation using Raylib for GUI, to be used for experimenting with chess e
 
 
 TODO:
-Implement castling, promoting, check, win/lose/draw conditions
+Implement win/lose/draw conditions, add ui elements

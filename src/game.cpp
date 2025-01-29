@@ -2,16 +2,7 @@
 #include "game.h"
 
 // Board definition
-char board[BOARD_SIZE][BOARD_SIZE] = {
-    {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
-    {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
-    {'0', '0', '0', '0', '0', '0', '0', '0'},
-    {'0', '0', '0', '0', '0', '0', '0', '0'},
-    {'0', '0', '0', '0', '0', '0', '0', '0'},
-    {'0', '0', '0', '0', '0', '0', '0', '0'},
-    {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
-    {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
-};
+char board[BOARD_SIZE][BOARD_SIZE];
 
 bool isWhitesTurn = true;
 int lastMove[4] = {-1, -1, -1, -1}; // {startRow, startCol, endRow, endCol}
@@ -185,7 +176,6 @@ void castleKing(int startRow, int startCol, int endRow, int endCol){
             blackKingCol = 2;
         }
     }
-    printBoard();
 }
 
 // piece rules functions
@@ -399,4 +389,42 @@ std::vector<int> getValidIndexes(int startX, int startY){
         }
     }
     return validIndexes;
+}
+
+void loadBoardFromFEN(std::string fen){
+    int boardRow = 0;
+    int boardCol = 0;
+    for(int i = 0; i < fen.length(); i++){
+        if(isalpha(fen[i])){
+            board[boardRow][boardCol] = fen[i];
+            boardCol++;
+        }
+        else if(isdigit(fen[i])){
+            for(int j = 0; j < fen[i] - '0'; j++){
+                board[boardRow][boardCol + j] = '0';
+            }
+            boardCol += fen[i] - '0';
+        }
+        else{
+            boardRow++;
+            boardCol = 0;
+        }
+    }
+}
+
+void resetGame(){
+    isWhitesTurn = true;
+    lastMove[0] = -1;
+    lastMove[1] = -1;
+    lastMove[2] = -1;
+    lastMove[3] = -1;
+    whiteKingRow = 7;
+    whiteKingCol = 4;
+    blackKingRow = 0;
+    blackKingCol = 4;
+    canWhiteShortCastle = true;
+    canWhiteLongCastle = true;
+    canBlackShortCastle = true;
+    canBlackLongCastle = true;
+    loadBoardFromFEN(STARTING_BOARD_FEN);
 }

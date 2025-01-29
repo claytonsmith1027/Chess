@@ -11,6 +11,7 @@ struct Square{
 };
 
 void initBoard(const int WINDOW_WIDTH, const int WINDOW_HEIGHT);
+void loadSquarePieces();
 void drawBoard();
 void drawPieces(const int WINDOW_WIDTH, const int WINDOW_HEIGHT, Square selectedSquare = {});
 void loadPieces(const int WINDOW_WIDTH, const int WINDOW_HEIGHT);

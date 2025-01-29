@@ -19,6 +19,7 @@ int MainLoop()
 
 	// Load a texture from the resources directory
 	loadPieces(WINDOW_WIDTH, WINDOW_HEIGHT);
+	loadBoardFromFEN(STARTING_BOARD_FEN);
 	initBoard(WINDOW_WIDTH, WINDOW_HEIGHT);
 	Square hoveredSquare = {};
 	Square heldSquare = {};
@@ -32,6 +33,10 @@ int MainLoop()
 		// Setup the back buffer for drawing (clear color and depth buffers)
 		ClearBackground(DARKGRAY);
         drawBoard();
+		if(IsKeyPressed(KEY_R)){
+			resetGame();
+			loadSquarePieces();
+		}
 		if(!IsMouseButtonDown(0)){
         	hoveredSquare = currSquare(WINDOW_WIDTH, WINDOW_HEIGHT, GetMouseX(), GetMouseY());
 			if(hoveredSquare.piece != '0' && hoveredSquare.piece != '\0'){

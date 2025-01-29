@@ -4,6 +4,7 @@
 #include <vector>
 
 const int BOARD_SIZE = 8;
+const std::string STARTING_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"; 
 
 void printBoard();
 
@@ -28,10 +29,11 @@ bool isValidKingMove(int startRow, int startCol, int endRow, int endCol);
 bool isValidPieceMovement(int startRow, int startCol, int endRow, int endCol);
 bool isValidMove(int startRow, int startCol, int endRow, int endCol);
 
-std::vector<int> getValidIndexes(int startRow, int startCol);
 void switchPlayer();
 void movePiece(int startRow, int startCol, int endRow, int endCol);
 void promotePiece(int endRow, int endCol, char piece);
 void playMove(int startRow, int startCol, int endRow, int endCol);
 
-
+std::vector<int> getValidIndexes(int startRow, int startCol);
+void loadBoardFromFEN(std::string fen);
+void resetGame();

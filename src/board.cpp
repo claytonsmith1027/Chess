@@ -39,6 +39,13 @@ void initBoard(const int WINDOW_WIDTH, const int WINDOW_HEIGHT){
     }
 }
 
+void loadSquarePieces(){
+    char* board = currBoard();
+    for(int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++){
+        squares[i].piece = board[i];
+    }
+}
+
 void drawBoard() {
     Color LIGHT_COLOR = {0xb8, 0x8b, 0x4a, 0xff};
     Color DARK_COLOR = {0xe3, 0xc1, 0x6f, 0xff};

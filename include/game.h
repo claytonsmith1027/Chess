@@ -19,6 +19,8 @@ bool isPromotion(int endRow, int endCol);
 bool isAttacked(int row, int column);
 bool canCastle(int startRow, int startCol, int endRow, int endCol);
 void castleKing(int startRow, int startCol, int endRow, int endCol);
+int legalMovesCount();
+bool isNoLegalMoves();
 
 bool isValidPawnMove(int startRow, int startCol, int endRow, int endCol);
 bool isValidRookMove(int startRow, int startCol, int endRow, int endCol);
@@ -33,6 +35,9 @@ void switchPlayer();
 void movePiece(int startRow, int startCol, int endRow, int endCol);
 void promotePiece(int endRow, int endCol, char piece);
 void playMove(int startRow, int startCol, int endRow, int endCol);
+
+bool isCheckmate();
+bool isStalemate();
 
 std::vector<int> getValidIndexes(int startRow, int startCol);
 void loadBoardFromFEN(std::string fen);

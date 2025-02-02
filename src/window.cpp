@@ -82,18 +82,41 @@ int MainLoop()
 							continue;
 						}
 						playMove(heldSquare.row, heldSquare.col, hoveredSquare.row, hoveredSquare.col);
+
+						// temporary promotion handling
 						if(isPromotion(hoveredSquare.row, hoveredSquare.col)){
+							char promotionPiece;
+							std::cout << "What do you want to promote to (q, n, b, r): ";
+							while(true){
+								std::cin >> promotionPiece;
+								std::cout << std::endl;
+								if(promotionPiece != 'q' && promotionPiece != 'n' && promotionPiece != 'b' && promotionPiece != 'r'){
+									std::cout << "Invalid piece! Please try again: ";
+								}
+								else{
+									break;
+								}
+							}
 							if(heldSquare.piece == 'P'){
-								promotePiece(hoveredSquare.row, hoveredSquare.col, 'Q');
+								promotePiece(hoveredSquare.row, hoveredSquare.col, std::toupper(promotionPiece));
 								updateSquare(heldSquare, 'Q');
 							}
 							else{
-								promotePiece(hoveredSquare.row, hoveredSquare.col, 'q');
+								promotePiece(hoveredSquare.row, hoveredSquare.col, promotionPiece);
 								updateSquare(heldSquare, 'q');
 							}
 						}
+
 						updateSquare(hoveredSquare, heldSquare.piece);
 						updateSquare(heldSquare, '0');
+
+						// temporary checkmate and stalemate handling
+						if(isCheckmate()){
+							std::cout << "CHECKMATE" << std::endl;
+						}
+						else if(isStalemate()){
+							std::cout << "STALEMATE" << std::endl;
+						}
 					}
 				}
 			}

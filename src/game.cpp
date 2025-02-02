@@ -134,12 +134,12 @@ bool canCastle(int startRow, int startCol, int endRow, int endCol){
         return false;
     }
 
-    if(endCol == 7 || endCol == 6){
+    if(endCol == 6){
         if(!canShortCastle || isAttacked(castleRow, 6) || isAttacked(castleRow, 5) || isAttacked(castleRow, 4)){
             return false;
         }
     }
-    else if(endCol == 0 || endCol == 1 || endCol == 2){
+    else if(endCol == 2){
         if(!canLongCastle || isAttacked(castleRow, 1) || isAttacked(castleRow, 2) || isAttacked(castleRow, 3) || isAttacked(castleRow, 4)){
             return false;
         }
@@ -176,6 +176,36 @@ void castleKing(int startRow, int startCol, int endRow, int endCol){
             blackKingCol = 2;
         }
     }
+}
+
+int legalMovesCount(){
+    int count = 0;
+    for(int i = 0; i < BOARD_SIZE; i++){
+        for(int j = 0; j < BOARD_SIZE; j++){
+            if(board[i][j] != '0' && isWhitesTurn == isWhitePiece(i, j)){
+                count += getValidIndexes(i, j).size();
+            }
+        }
+    }
+    return count;
+}
+
+bool isNoLegalMoves(){
+    // maybe worst function ever written :D 
+    for(int i = 0; i < BOARD_SIZE; i++){
+        for(int j = 0; j < BOARD_SIZE; j++){
+            if(board[i][j] != '0' && isWhitesTurn == isWhitePiece(i, j)){
+                for(int k = 0; k < BOARD_SIZE; k++){
+                    for(int l = 0; l < BOARD_SIZE; l++){
+                        if(isValidMove(i, j, k, l)){
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return true;
 }
 
 // piece rules functions
@@ -375,6 +405,41 @@ void playMove(int startRow, int startCol, int endRow, int endCol){
     movePiece(startRow, startCol, endRow, endCol);
     updateLastMove(startRow, startCol, endRow, endCol);
     switchPlayer();
+}
+
+// game end check functions
+bool isCheckmate(){
+    int kingRow = blackKingRow;
+    int kingCol = blackKingCol;
+
+    if(isWhitesTurn){
+        kingRow = whiteKingRow;
+        kingCol = whiteKingCol;
+    }
+
+    if(isAttacked(kingRow, kingCol)){
+        if(isNoLegalMoves()){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool isStalemate(){
+    int kingRow = blackKingRow;
+    int kingCol = blackKingCol;
+
+    if(isWhitesTurn){
+        kingRow = whiteKingRow;
+        kingCol = whiteKingCol;
+    }
+
+    if(isNoLegalMoves()){
+        if(!isAttacked(kingRow, kingCol)){
+            return true;
+        }
+    }
+    return false;
 }
 
 // external helper functions (i.e. highlighting squares, etc.)
